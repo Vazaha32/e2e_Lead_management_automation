@@ -1,0 +1,7 @@
+flask
+python-dotenv
+airtable-python-wrapper
+apscheduler
+jinja2
+requests
+google-api-python-client
