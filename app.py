@@ -4,6 +4,7 @@ import json
 import logging
 import requests
 import smtplib
+import unicodedata
 from datetime import datetime, timedelta, timezone
 from flask import Flask, request, jsonify
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -65,12 +66,14 @@ def create_airtable_record(data):
     try:
         headers = {
             "Authorization": f"Bearer {AIRTABLE_PAT}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json; charset=utf-8"  # Ajout du charset
         }
+        # Normalisation Unicode
+        cleaned_name = unicodedata.normalize('NFKC', data['name']).strip()
 
         record_data = {
             "fields": {
-                "Name": data['name'],
+                "Name": cleaned_name,
                 "Email": data['email'],
                 "Messages": data.get('message', ''),
                 "Created": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
@@ -131,8 +134,8 @@ def send_email(email: str, calendly_link: str):
         html_content = template.render(calendly_link=calendly_link)
 
         # Configuration de l'email
-        msg = MIMEText(html_content, 'html')
-        msg['Subject'] = "📅 Rappel pour votre appel de suivi"
+        msg = MIMEText(html_content, 'html', 'utf-8')
+        msg['Subject'] = "📅 Rappel pour votre appel de suivi,'utf-8"
         msg['From'] = GMAIL_USER
         msg['To'] = email
 
